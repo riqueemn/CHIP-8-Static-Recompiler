@@ -1,0 +1,6 @@
+g++ src/main.cpp -o tradutor
+tradutor roms/ibm_logo.ch8
+//g++ output/rom_data.cpp -o rom_data_recompile
+g++ -c output/rom_data.cpp -I"D:\SFML-3.0.0\include"
+g++ rom_data.o -o rom_data_recompile -L"D:\SFML-3.0.0\\lib" -lsfml-graphics -lsfml-window -lsfml-system
+rom_data_recompile

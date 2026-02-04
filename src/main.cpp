@@ -3,159 +3,177 @@
 #include <vector>
 #include <string>
 #include <cstdint>
+#include <iomanip>
 
-//uint8_t V[16];
-//uint16_t I;
+// Protótipos das funções
+void escreverCabecalho(std::ofstream& out);
+void inicializarAmbiente(std::ofstream& out, const std::vector<uint8_t>& buffer);
+void traduzirROM(std::ofstream& out, const std::vector<uint8_t>& buffer);
 
-int main(int argc, char* argv[]){
-
-    if (argc < 2){
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
         std::cout << "Uso: tradutor <nome_da_rom.ch8>" << std::endl;
         return 1;
     }
 
-    std::string arquivoEntrada = argv[1];
-
-
-    // Abrir ROM
-    std::ifstream romFile(arquivoEntrada, std::ios::binary);
-    if(!romFile){
-        std::cerr << "Erro ao abrir a ROM: " << arquivoEntrada << std::endl;
+    std::ifstream romFile(argv[1], std::ios::binary);
+    if (!romFile) {
+        std::cerr << "Erro ao abrir a ROM" << std::endl;
         return 1;
     }
 
-    // Carregar os bytes da ROM para um vetor
     std::vector<uint8_t> buffer((std::istreambuf_iterator<char>(romFile)), std::istreambuf_iterator<char>());
-
-    // Criar o arquivo C++ de saída
     std::ofstream out("output/rom_data.cpp");
 
-    // Cabeçalho básico do jogo
-    out << "#include <iostream>\n";
-    out << "#include <cstdint>\n";
-    out << "#include <cstring>\n";
-    out << "#include <thread>\n";
-    out << "#include <chrono>\n\n";
-    out << "int main() {\n";
-    out << "    uint8_t V[16] = {0};\n";
-    out << "    uint16_t I = 0;\n\n";
-    out << "    uint8_t RAM[4096] = {0};\n";
-    out << "    bool tela[64*32] = {false};\n\n";
+    if (out.is_open()) {
+        escreverCabecalho(out);
+        inicializarAmbiente(out, buffer);
+        traduzirROM(out, buffer);
 
-    out << "    // Carregando a ROM para a RAM virtual\n";
+        out << "\n    return 0;\n}\n";
+        out.close();
+        std::cout << "Recompilacao concluida com sucesso!" << std::endl;
+    }
 
+    return 0;
+}
+
+void escreverCabecalho(std::ofstream& out) {
+    out << R"(#include <SFML/Graphics.hpp>
+#include <iostream>
+#include <cstdint>
+#include <vector>
+#include <optional>
+#include <cstdlib>
+#include <ctime>
+
+int main() {
+    srand(static_cast<unsigned>(time(NULL)));
+    sf::RenderWindow window(sf::VideoMode({640, 320}), "Chip-8 Recompilado SFML 3");
+    window.setFramerateLimit(60);
+
+    uint8_t V[16] = {0};
+    uint16_t I = 0;
+    uint8_t RAM[4096] = {0};
+    uint8_t delayTimer = 0;
+    uint16_t stack[16];
+    int sp = -1;
+    bool tela[64 * 32] = {false};
+
+    sf::Image image;
+    image.resize({64, 32}, sf::Color::Black);
+    sf::Texture texture;
+    texture.loadFromImage(image);
+    sf::Sprite sprite(texture);
+    sprite.setScale({10.f, 10.f});
+
+    uint8_t fontes[] = {
+        0xF0,0x90,0x90,0x90,0xF0, 0x20,0x60,0x20,0x20,0x70, 0xF0,0x10,0xF0,0x80,0xF0,
+        0xF0,0x10,0xF0,0x10,0xF0, 0x90,0x90,0xF0,0x10,0x10, 0xF0,0x80,0xF0,0x10,0xF0,
+        0xF0,0x80,0xF0,0x90,0xF0, 0xF0,0x10,0x20,0x40,0x40, 0xF0,0x90,0xF0,0x90,0xF0,
+        0xF0,0x90,0xF0,0x10,0xF0
+    };
+    for(int i=0; i<50; i++) RAM[i] = fontes[i];
+
+    auto isKeyPressed = [](int key) -> bool {
+        switch(key) {
+            case 0x1: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Num1);
+            case 0x2: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Num2);
+            case 0x3: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Num3);
+            case 0xC: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Num4);
+            case 0x4: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Q);
+            case 0x5: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::W);
+            case 0x6: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::E);
+            case 0xD: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::R);
+            case 0x7: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::A);
+            case 0x8: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::S);
+            case 0x9: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::D);
+            case 0xE: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::F);
+            case 0xA: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::Z);
+            case 0x0: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::X);
+            case 0xB: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::C);
+            case 0xF: return sf::Keyboard::isKeyPressed(sf::Keyboard::Scan::V);
+            default: return false;
+        }
+    };
+)";
+}
+
+void inicializarAmbiente(std::ofstream& out, const std::vector<uint8_t>& buffer) {
+    out << "\n    // --- Carga da ROM ---\n";
     for (size_t i = 0; i < buffer.size(); ++i) {
         out << "    RAM[" << std::dec << (0x200 + i) << "] = 0x" << std::hex << (int)buffer[i] << ";\n";
     }
+    out << "\n    goto L200; // Pulo para o inicio do codigo\n";
+}
 
-    out << "\n";
-
-    // Loop de Tradução Simples (Teste)
-    for (size_t i = 0; i < buffer.size(); i += 2)
-    {
+void traduzirROM(std::ofstream& out, const std::vector<uint8_t>& buffer) {
+    for (size_t i = 0; i < buffer.size(); i += 2) {
         uint16_t opcode = (buffer[i] << 8) | buffer[i + 1];
-        uint16_t pc = 0x200 + i; // Endereço inicial típico para ROMs CHIP-8
+        uint16_t pc = 0x200 + i;
 
-        uint8_t  nibble  = (opcode & 0xF000) >> 12; // Primeiro dígito (Tipo)
-        uint8_t  x       = (opcode & 0x0F00) >> 8;  // Segundo dígito (Registrador VX)
-        uint8_t  y       = (opcode & 0x00F0) >> 4;  // Terceiro dígito (Registrador VY)
-        uint8_t  n       = (opcode & 0x000F);       // Quarto dígito (4-bit constante)
-        uint8_t  kk      = (opcode & 0x00FF);       // Últimos 8 bits (8-bit constante)
-        uint16_t nnn     = (opcode & 0x0FFF);       // Últimos 12 bits (Endereço)
+        uint8_t nib = (opcode & 0xF000) >> 12;
+        uint8_t x   = (opcode & 0x0F00) >> 8;
+        uint8_t y   = (opcode & 0x00F0) >> 4;
+        uint8_t n   = (opcode & 0x000F);
+        uint8_t kk  = (opcode & 0x00FF);
+        uint16_t nnn = (opcode & 0x0FFF);
 
-        out << "    L" << std::hex << pc << ": ";
+        // Labels par e impar para seguranca de salto
+        out << "    L" << std::hex << pc << ": ; L" << (pc + 1) << ": ;\n";
 
-        // 1. Comando de Pulo (1NNN)
-        if (nibble == 0x1) {
-            out << "goto L" << std::hex << nnn << ";\n";
-        }
-        // 2. Definir Registro (6XKK)
-        else if (nibble == 0x6) {
-            out << "V[" << std::dec << int(x) << "] = 0x" << (int)kk << ";\n";
-        }
-        // 3. Adicionar ao Registro (7XKK)
-        else if (nibble == 0x7) {
-            out << "V[" << std::dec << int(x) << "] += 0x" << (int)kk << ";\n";
-        }
-        // 4. Limpar Tela (00E0)
-        else if (opcode == 0x00E0) {
-            out << "std::cout << \"[Limpar Tela]\" << std::endl;\n";
-        }
-        // 5. SE (3XKK) - Pula se Vx == kk
-        else if (nibble == 0x3) {
-            uint16_t proximoEndereco = pc + 4;
-            out << "    if (V[" << std::dec << (int)x << "] == 0x" << std::hex << (int)kk << ") ";
-            out << "goto L" << proximoEndereco << ";\n";
-        }
-        // 6. ANNN: Define o registrador I com o valor nnn
-        else if (nibble == 0xA) {
-            out << "    I = 0x" << std::hex << nnn << ";\n";
-        }
-        // 7. FX1E: Soma VX ao registrador I
-        else if (nibble == 0xF && kk == 0x1E) {
-            out << "    I += V[" << std::dec << (int)x << "];\n";
-        }
-        // FX55: Salva V0 a VX na memória a partir de I
-        else if (nibble == 0xF && kk == 0x55) {
-            out << "    for(int idx = 0; idx <= " << std::dec << (int)x << "; ++idx) ";
-            out << "RAM[I + idx] = V[idx];\n";
-        }
-        // FX65: Preenche V0 a VX com valores da memória a partir de I
-        else if (nibble == 0xF && kk == 0x65) {
-            out << "    for(int idx = 0; idx <= " << std::dec << (int)x << "; ++idx) ";
-            out << "V[idx] = RAM[I + idx];\n";
-        }
-        // DXYN: Desenha um sprite na tela
-        else if (nibble == 0xD) {
-            out << "    {\n";
-            out << "        uint8_t x_pos = V[" << std::dec << (int)x << "] % 64;\n";
-            out << "        uint8_t y_pos = V[" << (int)y << "] % 32;\n";
-            out << "        V[0xF] = 0;\n";
-            out << "        for (int row = 0; row < " << (int)n << "; row++) {\n";
-            out << "            uint8_t sprite_byte = RAM[I + row];\n";
-            out << "            for (int col = 0; col < 8; col++) {\n";
-            out << "                if ((sprite_byte & (0x80 >> col)) != 0) {\n";
-            out << "                    int idx = (x_pos + col) + ((y_pos + row) * 64);\n";
-            out << "                    if (idx < 64 * 32) {\n";
-            out << "                        if (tela[idx]) V[0xF] = 1; // Colisão!\n";
-            out << "                        tela[idx] ^= true; // XOR\n";
-            out << "                    }\n";
-            out << "                }\n";
-            out << "            }\n";
-            out << "        }\n";
-            
-            // Desenhar o resultado no terminal após cada sprite
-            out << "        std::cout << \"\\033[H\"; // Move o cursor para o topo do terminal\n";
-            out << "        for (int y = 0; y < 32; y++) {\n";
-            out << "            for (int x = 0; x < 64; x++) {\n";
-            out << "                std::cout << (tela[x + y * 64] ? \"#\" : \" \");\n";
-            out << "            }\n";
-            out << "            std::cout << \"\\n\";\n";
-            out << "        }\n";
+        // Event loop SFML
+        out << "    while (const std::optional event = window.pollEvent()) {\n"
+            << "        if (event->is<sf::Event::Closed>()) { window.close(); return 0; }\n"
+            << "    }\n";
 
-            out << "        std::this_thread::sleep_for(std::chrono::milliseconds(16));\n";
-            out << "    }\n";
+        // Traducao das Instrucoes
+        if (nib == 0x0 && opcode == 0x00E0) out << "    for(int i=0;i<2048;i++) tela[i]=false;\n";
+        else if (nib == 0x0 && opcode == 0x00EE) {
+            out << "    if(sp >= 0) { uint16_t target = stack[sp--]; switch(target) {\n";
+            for (size_t j = 0; j <= buffer.size(); j += 2) {
+                out << "        case 0x" << std::hex << (0x200 + j) << ": goto L" << (0x200 + j) << ";\n";
+            }
+            out << "        default: return -1; } }\n";
         }
-        // FX33: Armazena a representação BCD de VX na memória (I, I+1, I+2)
-        else if (nibble == 0xF && kk == 0x33) {
-            out << "    RAM[I] = V[" << std::dec << (int)x << "] / 100;\n";
-            out << "    RAM[I+1] = (V[" << std::dec << (int)x << "] / 10) % 10;\n";
-            out << "    RAM[I+2] = V[" << std::dec << (int)x << "] % 10;\n";
+        else if (nib == 0x1) out << "    goto L" << std::hex << nnn << ";\n";
+        else if (nib == 0x2) out << "    stack[++sp] = 0x" << std::hex << (pc + 2) << "; goto L" << nnn << ";\n";
+        else if (nib == 0x3) out << "    if(V[" << std::dec << (int)x << "]==0x" << std::hex << (int)kk << ") goto L" << (pc + 4) << ";\n";
+        else if (nib == 0x4) out << "    if(V[" << std::dec << (int)x << "]!=0x" << std::hex << (int)kk << ") goto L" << (pc + 4) << ";\n";
+        else if (nib == 0x6) out << "    V[" << std::dec << (int)x << "] = 0x" << std::hex << (int)kk << ";\n";
+        else if (nib == 0x7) out << "    V[" << std::dec << (int)x << "] += 0x" << std::hex << (int)kk << ";\n";
+        else if (nib == 0x8) {
+            if (n == 0x0)      out << "    V[" << std::dec << (int)x << "] = V[" << (int)y << "];\n";
+            else if (n == 0x1) out << "    V[" << std::dec << (int)x << "] |= V[" << (int)y << "];\n";
+            else if (n == 0x2) out << "    V[" << std::dec << (int)x << "] &= V[" << (int)y << "];\n";
+            else if (n == 0x3) out << "    V[" << std::dec << (int)x << "] ^= V[" << (int)y << "];\n";
+            else if (n == 0x4) out << "    { uint16_t res = V[" << std::dec << (int)x << "] + V[" << (int)y << "]; V[15] = (res > 255); V[" << (int)x << "] = res & 0xFF; }\n";
+            else if (n == 0x5) out << "    { V[15] = (V[" << std::dec << (int)x << "] > V[" << (int)y << "]); V[" << (int)x << "] -= V[" << (int)y << "]; }\n";
         }
-        else {
-            out << "// Opcode nao implementado: 0x" << std::hex << opcode << "\n";
+        else if (nib == 0xA) out << "    I = 0x" << std::hex << nnn << ";\n";
+        else if (nib == 0xC) out << "    V[" << std::dec << (int)x << "] = (rand()%256) & 0x" << std::hex << (int)kk << ";\n";
+        else if (nib == 0xD) {
+            out << "    { V[15] = 0; uint8_t xp=V[" << std::dec << (int)x << "]%64, yp=V[" << std::dec << (int)y << "]%32;\n"
+                << "      for(int r=0; r<" << (int)n << "; r++){ uint8_t b=RAM[I+r];\n"
+                << "      for(int c=0; c<8; c++){ if((b&(0x80>>c))){\n"
+                << "      int idx=(xp+c)+(yp+r)*64; if(idx<2048){ if(tela[idx]) V[15]=1; tela[idx]^=true; } } } }\n"
+                << "      for(int i=0;i<2048;i++) image.setPixel({(unsigned int)(i%64),(unsigned int)(i/64)}, tela[i]?sf::Color::White:sf::Color::Black);\n"
+                << "      texture.update(image); window.clear(); window.draw(sprite); window.display(); if(delayTimer>0) delayTimer--; }\n";
         }
-        
-
-        
+        else if (nib == 0xE) {
+            if (kk == 0x9E) out << "    if(isKeyPressed(V[" << std::dec << (int)x << "])) goto L" << std::hex << (pc + 4) << ";\n";
+            if (kk == 0xA1) out << "    if(!isKeyPressed(V[" << std::dec << (int)x << "])) goto L" << std::hex << (pc + 4) << ";\n";
+        }
+        else if (nib == 0xF) {
+            if (kk == 0x07) out << "    V[" << std::dec << (int)x << "] = delayTimer;\n";
+            if (kk == 0x15) out << "    delayTimer = V[" << std::dec << (int)x << "];\n";
+            if (kk == 0x1E) out << "    I += V[" << std::dec << (int)x << "];\n";
+            if (kk == 0x29) out << "    I = V[" << std::dec << (int)x << "] * 5;\n";
+            if (kk == 0x33) out << "    RAM[I]=V[" << std::dec << (int)x << "]/100; RAM[I+1]=(V[" << (int)x << "]/10)%10; RAM[I+2]=V[" << (int)x << "]%10;\n";
+            if (kk == 0x65) out << "    for(int j=0; j<=" << std::dec << (int)x << "; j++) V[j]=RAM[I+j];\n";
+        }
     }
-
-    out << "\n   return 0;\n";
-    out << "}\n";
-
-    out.close();
-    std::cout << "Traducao concluida. Arquivo gerado em output/rom_data.cpp" << std::endl;
-    
-
-    return 0;
+    // Labels de fechamento
+    uint16_t fim = static_cast<uint16_t>(0x200 + buffer.size());
+    out << "    L" << std::hex << fim << ": ; L" << (fim + 1) << ": ;\n";
 }
