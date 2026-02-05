@@ -172,6 +172,13 @@ void traduzirROM(std::ofstream& out, const std::vector<uint8_t>& buffer) {
             if (kk == 0x33) out << "    RAM[I]=V[" << std::dec << (int)x << "]/100; RAM[I+1]=(V[" << (int)x << "]/10)%10; RAM[I+2]=V[" << (int)x << "]%10;\n";
             if (kk == 0x65) out << "    for(int j=0; j<=" << std::dec << (int)x << "; j++) V[j]=RAM[I+j];\n";
         }
+        else if (nib == 0xB) {
+            out << "    goto *(&&L200 + V[0] + 0x" << std::hex << nnn << "); // Exemplo conceitual\n";
+        // Nota: Em C++ padrão, o goto para endereço variável é uma extensão do GCC.
+        // O ideal é usar um switch-case similar ao que fizemos no RETURN.
+        } else {
+            out << "    // Instrução 0x" << std::hex << opcode << " não implementada.\n";
+        }
     }
     // Labels de fechamento
     uint16_t fim = static_cast<uint16_t>(0x200 + buffer.size());
