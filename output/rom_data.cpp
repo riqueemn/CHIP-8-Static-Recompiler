@@ -9,7 +9,7 @@
 int main() {
     srand(static_cast<unsigned>(time(NULL)));
     sf::RenderWindow window(sf::VideoMode({640, 320}), "Chip-8 Recompilado SFML 3");
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(600); // Velocidade de execução (instruções por segundo aprox.)
 
     uint8_t V[16] = {0};
     uint16_t I = 0;
@@ -25,6 +25,9 @@ int main() {
     texture.loadFromImage(image);
     sf::Sprite sprite(texture);
     sprite.setScale({10.f, 10.f});
+
+    // Relógio para o Delay Timer (60Hz)
+    sf::Clock timerClock;
 
     uint8_t fontes[] = {
         0xF0,0x90,0x90,0x90,0xF0, 0x20,0x60,0x20,0x20,0x70, 0xF0,0x10,0xF0,0x80,0xF0,
@@ -190,28 +193,48 @@ int main() {
     RAM[642] = 0x0;
     RAM[643] = 0xe0;
 
-    goto L200; // Pulo para o inicio do codigo
+    goto L200;
     L200: ; L201: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    for(int i=0;i<2048;i++) tela[i]=false;
+    for(int i=0; i<2048; i++) tela[i] = false;
     L202: ; L203: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     I = 0x22a;
     L204: ; L205: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[0] = 0xc;
     L206: ; L207: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[1] = 0x8;
     L208: ; L209: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
@@ -220,18 +243,30 @@ int main() {
       for(int c=0; c<8; c++){ if((b&(0x80>>c))){
       int idx=(xp+c)+(yp+r)*64; if(idx<2048){ if(tela[idx]) V[15]=1; tela[idx]^=true; } } } }
       for(int i=0;i<2048;i++) image.setPixel({(unsigned int)(i%64),(unsigned int)(i/64)}, tela[i]?sf::Color::White:sf::Color::Black);
-      texture.update(image); window.clear(); window.draw(sprite); window.display(); if(delayTimer>0) delayTimer--; }
+      texture.update(image); window.clear(); window.draw(sprite); window.display(); }
     L20a: ; L20b: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[0] += 0x9;
     L20c: ; L20d: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     I = 0x239;
     L20e: ; L20f: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
@@ -240,18 +275,30 @@ int main() {
       for(int c=0; c<8; c++){ if((b&(0x80>>c))){
       int idx=(xp+c)+(yp+r)*64; if(idx<2048){ if(tela[idx]) V[15]=1; tela[idx]^=true; } } } }
       for(int i=0;i<2048;i++) image.setPixel({(unsigned int)(i%64),(unsigned int)(i/64)}, tela[i]?sf::Color::White:sf::Color::Black);
-      texture.update(image); window.clear(); window.draw(sprite); window.display(); if(delayTimer>0) delayTimer--; }
+      texture.update(image); window.clear(); window.draw(sprite); window.display(); }
     L210: ; L211: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     I = 0x248;
     L212: ; L213: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[0] += 0x8;
     L214: ; L215: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
@@ -260,18 +307,30 @@ int main() {
       for(int c=0; c<8; c++){ if((b&(0x80>>c))){
       int idx=(xp+c)+(yp+r)*64; if(idx<2048){ if(tela[idx]) V[15]=1; tela[idx]^=true; } } } }
       for(int i=0;i<2048;i++) image.setPixel({(unsigned int)(i%64),(unsigned int)(i/64)}, tela[i]?sf::Color::White:sf::Color::Black);
-      texture.update(image); window.clear(); window.draw(sprite); window.display(); if(delayTimer>0) delayTimer--; }
+      texture.update(image); window.clear(); window.draw(sprite); window.display(); }
     L216: ; L217: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[0] += 0x4;
     L218: ; L219: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     I = 0x257;
     L21a: ; L21b: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
@@ -280,18 +339,30 @@ int main() {
       for(int c=0; c<8; c++){ if((b&(0x80>>c))){
       int idx=(xp+c)+(yp+r)*64; if(idx<2048){ if(tela[idx]) V[15]=1; tela[idx]^=true; } } } }
       for(int i=0;i<2048;i++) image.setPixel({(unsigned int)(i%64),(unsigned int)(i/64)}, tela[i]?sf::Color::White:sf::Color::Black);
-      texture.update(image); window.clear(); window.draw(sprite); window.display(); if(delayTimer>0) delayTimer--; }
+      texture.update(image); window.clear(); window.draw(sprite); window.display(); }
     L21c: ; L21d: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[0] += 0x8;
     L21e: ; L21f: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     I = 0x266;
     L220: ; L221: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
@@ -300,18 +371,30 @@ int main() {
       for(int c=0; c<8; c++){ if((b&(0x80>>c))){
       int idx=(xp+c)+(yp+r)*64; if(idx<2048){ if(tela[idx]) V[15]=1; tela[idx]^=true; } } } }
       for(int i=0;i<2048;i++) image.setPixel({(unsigned int)(i%64),(unsigned int)(i/64)}, tela[i]?sf::Color::White:sf::Color::Black);
-      texture.update(image); window.clear(); window.draw(sprite); window.display(); if(delayTimer>0) delayTimer--; }
+      texture.update(image); window.clear(); window.draw(sprite); window.display(); }
     L222: ; L223: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[0] += 0x8;
     L224: ; L225: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     I = 0x275;
     L226: ; L227: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
@@ -320,226 +403,387 @@ int main() {
       for(int c=0; c<8; c++){ if((b&(0x80>>c))){
       int idx=(xp+c)+(yp+r)*64; if(idx<2048){ if(tela[idx]) V[15]=1; tela[idx]^=true; } } } }
       for(int i=0;i<2048;i++) image.setPixel({(unsigned int)(i%64),(unsigned int)(i/64)}, tela[i]?sf::Color::White:sf::Color::Black);
-      texture.update(image); window.clear(); window.draw(sprite); window.display(); if(delayTimer>0) delayTimer--; }
+      texture.update(image); window.clear(); window.draw(sprite); window.display(); }
     L228: ; L229: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     goto L228;
     L22a: ; L22b: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L22c: ; L22d: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L22e: ; L22f: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    if(V[12]==0x0) goto L232;
+    if(V[12] == 0x0) goto L232;
     L230: ; L231: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    if(V[12]==0x0) goto L234;
+    if(V[12] == 0x0) goto L234;
     L232: ; L233: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    if(V[12]==0x0) goto L236;
+    if(V[12] == 0x0) goto L236;
     L234: ; L235: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    if(V[12]==0x0) goto L238;
+    if(V[12] == 0x0) goto L238;
     L236: ; L237: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L238: ; L239: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L23a: ; L23b: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0xff não implementada.
     L23c: ; L23d: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x38 não implementada.
     L23e: ; L23f: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x3f não implementada.
     L240: ; L241: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x3f não implementada.
     L242: ; L243: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x38 não implementada.
     L244: ; L245: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0xff não implementada.
     L246: ; L247: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0xff não implementada.
     L248: ; L249: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[0] = V[0];
     L24a: ; L24b: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L24c: ; L24d: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L24e: ; L24f: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[0] = V[0];
     L250: ; L251: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     V[0] = V[0];
     L252: ; L253: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L254: ; L255: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L256: ; L257: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L258: ; L259: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0xfc não implementada.
     L25a: ; L25b: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x3e não implementada.
     L25c: ; L25d: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x3f não implementada.
     L25e: ; L25f: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x3b não implementada.
     L260: ; L261: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x39 não implementada.
     L262: ; L263: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0xf8 não implementada.
     L264: ; L265: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0xf8 não implementada.
     L266: ; L267: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x300 não implementada.
     L268: ; L269: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x700 não implementada.
     L26a: ; L26b: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0xf00 não implementada.
     L26c: ; L26d: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    goto *(&&L200 + V[0] + 0xf00); // Exemplo conceitual
     L26e: ; L26f: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L270: ; L271: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L272: ; L273: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
     L274: ; L275: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    if(V[3]!=0xe0) goto L278;
+    if(V[3] != 0xe0) goto L278;
     L276: ; L277: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    for(int i=0;i<2048;i++) tela[i]=false;
+    for(int i=0; i<2048; i++) tela[i] = false;
     L278: ; L279: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x80 não implementada.
     L27a: ; L27b: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x80 não implementada.
     L27c: ; L27d: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x80 não implementada.
     L27e: ; L27f: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    // Instrução 0x80 não implementada.
     L280: ; L281: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    for(int i=0;i<2048;i++) tela[i]=false;
+    for(int i=0; i<2048; i++) tela[i] = false;
     L282: ; L283: ;
+    if (timerClock.getElapsedTime().asMicroseconds() > 16666) {
+        if (delayTimer > 0) delayTimer--;
+        timerClock.restart();
+    }
     while (const std::optional event = window.pollEvent()) {
         if (event->is<sf::Event::Closed>()) { window.close(); return 0; }
     }
-    for(int i=0;i<2048;i++) tela[i]=false;
-    L284: ; L285: ;
+    for(int i=0; i<2048; i++) tela[i] = false;
 
     return 0;
 }
